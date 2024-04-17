@@ -1,0 +1,36 @@
+linters:
+  enable:
+  # Enable specific linter
+  # https://golangci-lint.run/usage/linters
+    - asciicheck
+    - dupl
+    - durationcheck
+    - errorlint
+    - gocyclo
+    - gosec
+    - maintidx
+    - whitespace
+    - unparam
+    - unconvert
+    - tparallel
+    - thelper
+    - reassign
+    - prealloc
+    - paralleltest
+    - nilnil
+    - nilerr
+    - nestif
+    - importas
+    - gocritic
+    - exportloopref
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - maintidx
+        - errorlint
