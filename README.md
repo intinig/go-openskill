@@ -1,5 +1,5 @@
 # GO-OPENSKILL
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/intinig/go-openskill/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/intinig/go-openskill/tree/master)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/intinig/go-openskill/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/intinig/go-openskill/tree/main)
 
 Go implementation of Weng-Lin Rating, as described at https://www.csie.ntu.edu.tw/~cjlin/papers/online_ranking/online_journal.pdf
 
