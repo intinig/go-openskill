@@ -1,6 +1,5 @@
 # GO-OPENSKILL
-![Coverage](https://img.shields.io/badge/Coverage-99.6%25-brightgreen)
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/intinig/go-openskill/tree/main.svg?style=svg&circle-token=a059985eb8395553183ea2b9f0d69d27cfb61feb)](https://dl.circleci.com/status-badge/redirect/gh/intinig/go-openskill/tree/main)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/intinig/go-openskill/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/intinig/go-openskill/tree/master)
 
 Go implementation of Weng-Lin Rating, as described at https://www.csie.ntu.edu.tw/~cjlin/papers/online_ranking/online_journal.pdf
 
@@ -33,7 +32,6 @@ Ratings are kept as an object which represent a gaussian curve, with properties 
 package main
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/intinig/go-openskill/rating"
 	"github.com/intinig/go-openskill/types"
 )
@@ -65,7 +63,6 @@ package main
 import (
 	"github.com/intinig/go-openskill/rating"
 	"github.com/intinig/go-openskill/types"
-	"golang.org/x/arch/arm64/arm64asm"
 )
 
 func main() {
@@ -93,7 +90,6 @@ When displaying a rating, or sorting a list of ratings, you can use `ordinal`
 package main
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/intinig/go-openskill/rating"
 	"github.com/intinig/go-openskill/types"
 )
@@ -158,7 +154,6 @@ odds that each of those teams will win.
 package main
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/intinig/go-openskill/rating"
 	"github.com/intinig/go-openskill/types"
 )
@@ -183,7 +178,6 @@ teams will draw. The number returned here should be treated as relative to other
 package main
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/intinig/go-openskill/rating"
 	"github.com/intinig/go-openskill/types"
 )
