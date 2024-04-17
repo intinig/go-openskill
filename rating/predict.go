@@ -5,6 +5,7 @@ import (
 
 	"gonum.org/v1/gonum/stat/distuv"
 
+	"github.com/intinig/go-openskill/ptr"
 	"github.com/intinig/go-openskill/types"
 	"github.com/intinig/go-openskill/util"
 )

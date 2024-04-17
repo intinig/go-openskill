@@ -3,6 +3,8 @@ package models
 import (
 	"math"
 
+	"github.com/intinig/go-openskill/ptr"
+
 	"github.com/intinig/go-openskill/types"
 	"github.com/intinig/go-openskill/util"
 )

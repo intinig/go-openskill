@@ -6,6 +6,7 @@ import (
 	_is "github.com/matryer/is"
 
 	"github.com/intinig/go-openskill/models"
+	"github.com/intinig/go-openskill/ptr"
 	"github.com/intinig/go-openskill/rating"
 	"github.com/intinig/go-openskill/types"
 )
@@ -35,7 +36,6 @@ func TestPlackettLuceInitializationZ(t *testing.T) {
 }
 
 func TestPlackettLuceInitializationMu(t *testing.T) {
-	t.Parallel()
 	t.Parallel()
 	is := _is.New(t)
 	model := models.NewPlackettLuce(&types.OpenSkillOptions{})

@@ -1,6 +1,7 @@
 package rating
 
 import (
+	"github.com/intinig/go-openskill/ptr"
 	"github.com/intinig/go-openskill/types"
 )
 

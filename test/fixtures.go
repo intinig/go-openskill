@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/intinig/go-openskill/ptr"
 	"github.com/intinig/go-openskill/rating"
 	"github.com/intinig/go-openskill/types"
 )
