@@ -120,7 +120,7 @@ import (
 func main() {
 	a1 := rating.New()
 	rating.Rate([]types.Team{{a1}, {a1}, {a1}, {a1}}, &types.OpenSkillOptions{
-		Ranks: []int{4, 1, 3, 2},
+		Rank: []int{4, 1, 3, 2},
     }) // []types.Team{Mu: 20.963..., Sigma: 8.084...} 🐌, { Mu: 27.795, Sigma: 8.263 }🥇
 }
 ```
