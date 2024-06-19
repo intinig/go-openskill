@@ -99,7 +99,7 @@ func main() {
 		Mu: ptr.Float64(43.07),
 		Sigma: ptr.Float64(2.42),
 	}) 
-	a1.Ordinal() // 35.81
+	ratings.Ordinal(a1) // 35.81
 }
 ```
 
