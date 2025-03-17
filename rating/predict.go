@@ -2,6 +2,7 @@ package rating
 
 import (
 	"math"
+	"sort"
 
 	"gonum.org/v1/gonum/stat/distuv"
 
@@ -155,14 +156,77 @@ func PredictDraw(teams []types.Team, options *types.OpenSkillOptions) float64 {
 }
 
 // PredictRank returns the probability of each team ranking
-func PredictRank(teams []types.Team, _ *types.OpenSkillOptions) ([]int64, []float64) {
-	// It's interesting to note that here we return 0 to the probability of being first
-	// when you're alone because the convention is that when you're alone you always draw
+func PredictRank(teams []types.Team, options *types.OpenSkillOptions) ([]int64, []float64) {
+	// If there is only one team, it will always be ranked first
 	if len(teams) == 1 {
 		return []int64{1}, []float64{0.0}
 	}
 
-	return []int64{}, []float64{}
+	// Initialize util, used for teamRatings
+	beta, betaSquared := getBetas(options)
+	u := util.NewWithOptions(&util.Options{
+		BetaSquared: ptr.Float64(betaSquared),
+	})
+
+	// Pre-calculate the team ratings
+	teamRatings := u.TeamRating(teams, options)
+
+	n := len(teams)
+	winProbabilities := make([]float64, n)
+
+	// Calculate win probabilities for each team
+	for i, teamI := range teamRatings {
+		teamWinProbability := 0.0
+		for j, teamJ := range teamRatings {
+			if i != j {
+				teamWinProbability += phiMajor(
+					(teamI.TeamMu - teamJ.TeamMu) /
+						math.Sqrt(2*beta*beta+teamI.TeamSigmaSquared+teamJ.TeamSigmaSquared),
+				)
+			}
+		}
+		winProbabilities[i] = teamWinProbability / float64(n-1)
+	}
+
+	// Normalize probabilities
+	totalProbability := 0.0
+	for _, p := range winProbabilities {
+		totalProbability += p
+	}
+	normalizedProbabilities := make([]float64, n)
+	for i, p := range winProbabilities {
+		normalizedProbabilities[i] = p / totalProbability
+	}
+
+	// Sort teams by probabilities in descending order
+	type teamProbability struct {
+		index       int
+		probability float64
+	}
+	sortedTeams := make([]teamProbability, n)
+	for i, p := range normalizedProbabilities {
+		sortedTeams[i] = teamProbability{i, p}
+	}
+	sort.Slice(sortedTeams, func(i, j int) bool {
+		return sortedTeams[i].probability > sortedTeams[j].probability
+	})
+
+	// Assign ranks
+	ranks := make([]int64, n)
+	currentRank := int64(1)
+	for i, team := range sortedTeams {
+		if i > 0 && team.probability < sortedTeams[i-1].probability {
+			currentRank = int64(i + 1)
+		}
+		ranks[team.index] = currentRank
+	}
+
+	return ranks, normalizedProbabilities
+}
+
+// phiMajor is a helper function to calculate the CDF of the standard normal distribution
+func phiMajor(x float64) float64 {
+	return 0.5 * (1 + math.Erf(x/math.Sqrt2))
 }
 
 // flattenTeams takes a slice of teams and flattens it into a slice of ratings

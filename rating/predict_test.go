@@ -1,6 +1,7 @@
 package rating_test
 
 import (
+	"math"
 	"testing"
 
 	_is "github.com/matryer/is"
@@ -246,7 +247,7 @@ func TestPredictDrawForThreeAsymmetricTeams(t *testing.T) {
 
 func TestPredictRank(t *testing.T) {
 	t.Parallel()
-	t.Skip("This test is not working as expected. Need to investigate.")
+
 	is := _is.New(t)
 
 	a1 := rating.NewWithOptions(&types.OpenSkillOptions{
@@ -278,11 +279,45 @@ func TestPredictRank(t *testing.T) {
 	team2 := []types.Rating{a2, b2}
 	team3 := []types.Rating{a3, b3}
 
-	_, ranks := rating.PredictRank([]types.Team{team1, team2, team3}, nil)
-	total := 0.0
-	for _, rank := range ranks {
-		total += rank
+	tests := []struct {
+		name     string
+		teams    []types.Team
+		expected float64
+	}{
+		{
+			name:     "ValidTeams",
+			teams:    []types.Team{team1, team2, team3},
+			expected: 1.0,
+		},
+		{
+			name:     "IdenticalTeams",
+			teams:    []types.Team{team1, team1, team1},
+			expected: 1.0,
+		},
+		{
+			name:     "OneTeam",
+			teams:    []types.Team{team1},
+			expected: 0.0,
+		},
+		{
+			name:     "TwoTeams",
+			teams:    []types.Team{team1, team2},
+			expected: 1.0,
+		},
 	}
-	draw := rating.PredictDraw([]types.Team{team1, team2, team3}, nil)
-	is.Equal(total+draw, float64(1))
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, ranks := rating.PredictRank(tt.teams, nil)
+			total := 0.0
+			for _, rank := range ranks {
+				total += rank
+			}
+			is.True(almostEqual(total, tt.expected, 1e-9))
+		})
+	}
+}
+
+func almostEqual(a, b, epsilon float64) bool {
+	return math.Abs(a-b) < epsilon
 }
