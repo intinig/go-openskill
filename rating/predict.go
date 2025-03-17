@@ -159,7 +159,7 @@ func PredictDraw(teams []types.Team, options *types.OpenSkillOptions) float64 {
 func PredictRank(teams []types.Team, options *types.OpenSkillOptions) ([]int64, []float64) {
 	// If there is only one team, it will always be ranked first
 	if len(teams) == 1 {
-		return []int64{1}, []float64{0.0}
+		return []int64{1}, []float64{1.0}
 	}
 
 	// Initialize util, used for teamRatings

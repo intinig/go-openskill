@@ -254,12 +254,12 @@ func TestPredictRank(t *testing.T) {
 		Mu:    ptr.Float64(34.0),
 		Sigma: ptr.Float64(0.25),
 	})
-	a2 := rating.NewWithOptions(&types.OpenSkillOptions{
-		Mu:    ptr.Float64(32.0),
+	a3 := rating.NewWithOptions(&types.OpenSkillOptions{
+		Mu:    ptr.Float64(30.0),
 		Sigma: ptr.Float64(0.25),
 	})
-	a3 := rating.NewWithOptions(&types.OpenSkillOptions{
-		Mu:    ptr.Float64(34.0),
+	a2 := rating.NewWithOptions(&types.OpenSkillOptions{
+		Mu:    ptr.Float64(32.0),
 		Sigma: ptr.Float64(0.25),
 	})
 
@@ -276,44 +276,50 @@ func TestPredictRank(t *testing.T) {
 		Sigma: ptr.Float64(0.5),
 	})
 	team1 := []types.Rating{a1, b1}
-	team2 := []types.Rating{a2, b2}
-	team3 := []types.Rating{a3, b3}
+	team2 := []types.Rating{a3, b3}
+	team3 := []types.Rating{a2, b2}
 
 	tests := []struct {
-		name     string
-		teams    []types.Team
-		expected float64
+		name                            string
+		teams                           []types.Team
+		expected_ranks                  []int64
+		expected_total_rank_probability float64
 	}{
 		{
-			name:     "ValidTeams",
-			teams:    []types.Team{team1, team2, team3},
-			expected: 1.0,
+			name:                            "ThreeTeams",
+			teams:                           []types.Team{team1, team2, team3},
+			expected_ranks:                  []int64{1, 3, 2},
+			expected_total_rank_probability: 1.0,
 		},
 		{
-			name:     "IdenticalTeams",
-			teams:    []types.Team{team1, team1, team1},
-			expected: 1.0,
+			name:                            "IdenticalTeams",
+			teams:                           []types.Team{team1, team1, team1},
+			expected_ranks:                  []int64{1, 1, 1},
+			expected_total_rank_probability: 1.0,
 		},
 		{
-			name:     "OneTeam",
-			teams:    []types.Team{team1},
-			expected: 0.0,
+			name:                            "OneTeam",
+			teams:                           []types.Team{team1},
+			expected_ranks:                  []int64{1},
+			expected_total_rank_probability: 1.0,
 		},
 		{
-			name:     "TwoTeams",
-			teams:    []types.Team{team1, team2},
-			expected: 1.0,
+			name:                            "TwoTeams",
+			teams:                           []types.Team{team1, team2},
+			expected_ranks:                  []int64{1, 2},
+			expected_total_rank_probability: 1.0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, ranks := rating.PredictRank(tt.teams, nil)
+			ranks, rank_probabilities := rating.PredictRank(tt.teams, nil)
 			total := 0.0
-			for _, rank := range ranks {
-				total += rank
+			for _, p := range rank_probabilities {
+				total += p
 			}
-			is.True(almostEqual(total, tt.expected, 1e-9))
+			is.True(almostEqual(total, tt.expected_total_rank_probability, 1e-9))
+			is.Equal(ranks, tt.expected_ranks)
 		})
 	}
 }
