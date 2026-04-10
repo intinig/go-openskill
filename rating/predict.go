@@ -41,6 +41,10 @@ func getBetas(options *types.OpenSkillOptions) (float64, float64) {
 
 // PredictWin returns the probability of each team winning
 func PredictWin(teams []types.Team, options *types.OpenSkillOptions) []float64 {
+	if len(teams) < 2 || len(flattenTeams(teams)) == 0 {
+		return make([]float64, len(teams))
+	}
+
 	// Initialize util, used for teamRatings
 	_, betaSquared := getBetas(options)
 	u := util.NewWithOptions(&util.Options{
@@ -82,7 +86,7 @@ func PredictWin(teams []types.Team, options *types.OpenSkillOptions) []float64 {
 			sigmaSqA := outerTeamRating.TeamSigmaSquared
 			sigmaSqB := innerTeamRating.TeamSigmaSquared
 
-			prediction += normal.CDF((muA - muB) / math.Sqrt(n*betaSQ+sigmaSqA*sigmaSqA+sigmaSqB*sigmaSqB))
+			prediction += normal.CDF((muA - muB) / math.Sqrt(2*betaSQ+sigmaSqA+sigmaSqB))
 		}
 
 		returning[i] = prediction / denom
@@ -91,68 +95,52 @@ func PredictWin(teams []types.Team, options *types.OpenSkillOptions) []float64 {
 	return returning
 }
 
-// PredictDraw returns the probability of each team drawing
+// PredictDraw returns the probability of a draw between the given teams.
+// Uses pairwise combinations matching the Weng-Lin formulation.
 func PredictDraw(teams []types.Team, options *types.OpenSkillOptions) float64 {
 	if len(teams) == 1 {
 		return 1.0
 	}
 
-	// Initialize util, used for teamRatings
+	flattened := flattenTeams(teams)
+	if len(flattened) == 0 {
+		return 0.0
+	}
+
 	beta, betaSquared := getBetas(options)
 	u := util.NewWithOptions(&util.Options{
 		BetaSquared: ptr.Float64(betaSquared),
 	})
 
-	// This is used at the end to normalize the results
-	n := float64(len(teams))
-	denom := n * (n - 1)
-	if n <= 2 {
-		denom /= 2
-	}
-
-	// Initialize the stats helpers. This is used to calculate the CDF
-	// of the normal distribution
 	normal := distuv.Normal{
 		Mu:    0,
 		Sigma: 1,
 	}
 
-	// Pre-calculate the team ratings
 	teamRatings := u.TeamRating(teams, options)
 
-	flattenedLength := float64(len(flattenTeams(teams)))
-	drawMargin := math.Sqrt(flattenedLength) * beta * normal.Quantile((1+1/n)/2)
+	totalPlayerCount := float64(len(flattened))
+	drawProbability := 1.0 / totalPlayerCount
+	drawMargin := math.Sqrt(totalPlayerCount) * beta * normal.Quantile((1+drawProbability)/2)
 
-	// Initialize the results
-	returning := make([]float64, len(teams))
-	for i, outerTeamRating := range teamRatings {
-		var innerTeamRatings []types.TeamRating
-		for j, innerTeamRating := range teamRatings {
-			if i != j {
-				innerTeamRatings = append(innerTeamRatings, innerTeamRating)
-			}
+	// Iterate over unordered pairs (combinations), averaging the pairwise
+	// draw probabilities.
+	var pairwiseSum float64
+	var pairCount int
+	for i := 0; i < len(teamRatings); i++ {
+		for j := i + 1; j < len(teamRatings); j++ {
+			muA := teamRatings[i].TeamMu
+			muB := teamRatings[j].TeamMu
+			sigmaSqA := teamRatings[i].TeamSigmaSquared
+			sigmaSqB := teamRatings[j].TeamSigmaSquared
+			sigmaBar := math.Sqrt(2*betaSquared + sigmaSqA + sigmaSqB)
+			pairwiseSum += normal.CDF((drawMargin-muA+muB)/sigmaBar) -
+				normal.CDF((muB-muA-drawMargin)/sigmaBar)
+			pairCount++
 		}
-
-		var prediction float64
-		for _, innerTeamRating := range innerTeamRatings {
-			muA := outerTeamRating.TeamMu
-			muB := innerTeamRating.TeamMu
-			betaSQ := u.BetaSquared
-			sigmaSqA := outerTeamRating.TeamSigmaSquared
-			sigmaSqB := innerTeamRating.TeamSigmaSquared
-			sigmaBar := math.Sqrt(n*betaSQ + sigmaSqA*sigmaSqA + sigmaSqB*sigmaSqB)
-			prediction += normal.CDF((drawMargin-muA+muB)/sigmaBar) -
-				normal.CDF((muA-muB-drawMargin)/sigmaBar)
-		}
-
-		returning[i] = prediction
 	}
 
-	sumReturning := 0.0
-	for _, v := range returning {
-		sumReturning += v
-	}
-	return math.Abs(sumReturning) / denom
+	return pairwiseSum / float64(pairCount)
 }
 
 // PredictRank returns the probability of each team ranking

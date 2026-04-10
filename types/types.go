@@ -12,41 +12,42 @@ type TeamRating struct {
 }
 
 type OpenSkillOptions struct {
-	// Z is the number of standard deviations a rating can deviate from the mean
-	// before it is considered to be outside the "normal" range of skill.
-	// The default value is 3.29, which covers approximately 99.7% of the normal
+	// Z is the number of standard deviations used in ordinal calculation.
+	// The default value is 3, which covers approximately 99.7% of the normal
 	// distribution.
 	Z *int
 	// Mu is the mean of the rating distribution.
 	// The default value is 25.0.
 	Mu *float64
 	// Sigma is the standard deviation of the rating distribution.
-	// The default value is 25.0 / 3.29 = 7.59.
+	// The default value is Mu / Z (25.0 / 3 ≈ 8.333).
 	Sigma *float64
-	// Epsilon is the minimum change in rating required for a player to gain or
-	// lose rating. The default value is 0.000001.
+	// Epsilon is the minimum value for the variance factor, preventing it from
+	// becoming too small or negative. The default value is 0.0001.
 	Epsilon *float64
-	// Beta is the "precision" of the rating distribution.
-	// The default value is 0.5.
+	// Beta is the distance (in terms of sigma) that guarantees about an 80%
+	// chance of winning. The default value is Sigma / 2.
 	Beta *float64
 	// Model is the rating model to use.
-	// The default value is Glicko2.
+	// The default value is PlackettLuce.
 	Model RatingModel
 	// Rank is the rank of each team, where 0 is the highest rank. The default value
-	// is [0, 1, ...]. This is only supported when passed through the Rate function
+	// is [0, 1, ...]. This is only supported when passed through the Rate function.
 	Rank []int
 	// Score is the score of each team. It is optional and used only if Rank
-	// is not specified.
+	// is not specified. Higher scores are better.
 	Score []int
-	// Weight is the weight of each player on a team
+	// Weight is the weight of each player on a team.
 	Weight [][]float64
-	// Tau is the "precision" of the rating distribution.
-	// The default value is 0.5.
+	// Tau is the additive dynamics parameter that prevents sigma from
+	// getting too small, increasing rating change volatility.
+	// The default value is nil (disabled).
 	Tau *float64
 	// PreventSigmaIncrease is a flag that prevents sigma from increasing.
 	// The default value is false.
 	PreventSigmaIncrease bool
-	// Gamma is a function that returns the dynamic factor for a given rating.
+	// Gamma is a function that returns the dynamic factor for a given team rating.
+	// The default computes sqrt(TeamSigmaSquared) / c.
 	Gamma func(TeamRating) float64
 }
 
