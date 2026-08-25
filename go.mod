@@ -6,6 +6,6 @@ toolchain go1.24.1
 
 require (
 	github.com/matryer/is v1.4.1
-	github.com/montanaflynn/stats v0.12.2
+	github.com/montanaflynn/stats v0.12.4
 	gonum.org/v1/gonum v0.17.0
 )
